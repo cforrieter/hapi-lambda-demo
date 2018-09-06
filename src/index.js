@@ -1,25 +1,49 @@
-'use strict';
+const Glue = require('glue')
+const HapiSwagger = require('hapi-swagger')
+const inert = require('inert')
+const vision = require('vision')
+const good = require('good')
 
-const Hapi = require('hapi');           // a very happy server
-const config = require('./config');     // application configuration
-const monitor = require('./monitor');   // Monitoring, logging
-const api = require('./api');           // REST API
-
-//  make a happy server
-const server = new Hapi.Server({
+const config = require('./config')
+const api = require('./api') // REST API
+const manifest = {
+  server: {
     port: process.env.port || 3000,
-    routes: { cors: true}
-});
+    routes: { cors: true },
+  },
+  register: {
+    plugins: [
+      vision,
+      inert,
+      // monitor,
+      api,
+      { plugin: HapiSwagger, options: config.swagger },
+      { plugin: good, options: config.logging },
+    ],
+  },
+}
 
-//  Register plugins
-const plugins = [config, monitor, api];
+const serverOptions = {
+  relativeTo: __dirname,
+}
 
-let loaded = false;
-server.makeReady = async function(){
-    if (!loaded) {
-        await server.register(plugins);
-        loaded = true;
-    }
-};
+exports.handler = async (event, context, callback) => {
+  const server = await Glue.compose(
+    manifest,
+    serverOptions
+  )
 
-module.exports = server;
+  const options = {
+    method: event.httpMethod,
+    url: event.path,
+    payload: event.body,
+    headers: event.headers,
+    validate: false,
+  }
+
+  const response = await server.inject(options)
+  return {
+    statusCode: response.statusCode,
+    body: JSON.stringify(response.result),
+  }
+}

@@ -4,3 +4,8 @@ jspm_packages
 
 # Serverless directories
 .serverless
+
+# IDE settings
+.idea
+
+.DS_Store
