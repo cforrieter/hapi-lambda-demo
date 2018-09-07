@@ -1,4 +1,4 @@
-const Glue = require('glue')
+const glue = require('glue')
 const HapiSwagger = require('hapi-swagger')
 const inert = require('inert')
 const vision = require('vision')
@@ -6,7 +6,7 @@ const good = require('good')
 
 const config = require('./config')
 const api = require('./api') // REST API
-const manifest = {
+exports.manifest = {
   server: {
     port: process.env.port || 3000,
     routes: { cors: true },
@@ -28,10 +28,7 @@ const serverOptions = {
 }
 
 exports.handler = async (event, context, callback) => {
-  const server = await Glue.compose(
-    manifest,
-    serverOptions
-  )
+  const server = await glue.compose(exports.manifest, serverOptions)
 
   const options = {
     method: event.httpMethod,

@@ -2,7 +2,7 @@
 const Boom = require('boom')
 const Joi = require('joi')
 
-const Services = require('../services')
+const Services = require('../../services')
 
 const handler = async function(request, h) {
   const service = new Services.EmployeeService(request)
